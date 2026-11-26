@@ -1,0 +1,91 @@
+# kube-prometheus-stack values tuned for a single-node k3s cluster.
+#
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   kubectl create namespace monitoring
+#   kubectl -n monitoring create secret generic grafana-admin \
+#     --from-literal=admin-user=admin --from-literal=admin-password="$(openssl rand -base64 24)"
+#   helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+#     --namespace monitoring --version 93.11.0 -f monitoring/kube-prometheus-stack/values.yaml
+
+# k3s runs the control plane inside a single binary and does not expose these
+# components on their usual ports, so their default scrape targets would
+# always be down.
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+kubeEtcd:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    retentionSize: 8GB
+    # Discover ServiceMonitors / PrometheusRules from every release, not only
+    # the ones labelled with this chart's release name.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: local-path # k3s default storage class
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 20m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+  # Replace the null receiver with Slack, e-mail, etc. Keep webhook URLs in a
+  # Secret (alertmanagerSpec.configSecret), not in this file.
+  config:
+    route:
+      receiver: "null"
+      group_by: ["alertname", "namespace"]
+      routes:
+        - receiver: "null"
+          matchers:
+            - alertname = "Watchdog"
+    receivers:
+      - name: "null"
+
+grafana:
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-user
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    size: 2Gi
+  sidecar:
+    dashboards:
+      enabled: true
+      # Any ConfigMap with this label is loaded as a dashboard (see monitoring/kustomization.yaml).
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+  ingress:
+    enabled: false
+    # ingressClassName: traefik
+    # hosts: [grafana.example.com]
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi

@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: shortener
+  labels:
+    app.kubernetes.io/name: shortener
+spec:
+  groups:
+    - name: shortener.rules
+      rules:
+        - alert: ShortenerHighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{job="shortener", status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{job="shortener"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "shortener is returning errors"
+            description: >-
+              {{ $value | humanizePercentage }} of requests to shortener failed
+              with a 5xx status over the last 5 minutes (threshold 5%).
