@@ -1,7 +1,7 @@
 # Default values for the shortener chart.
 
 image:
-  repository: ghcr.io/your-github-user/shortener
+  repository: ghcr.io/usernammy/shortener
   # Overridden per environment with the immutable sha-<commit> tag pushed by CI.
   tag: latest
   pullPolicy: IfNotPresent

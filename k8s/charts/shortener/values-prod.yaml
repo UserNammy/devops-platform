@@ -1,6 +1,6 @@
 # Production overrides, used by the Argo CD Application.
 image:
-  repository: ghcr.io/your-github-user/shortener
+  repository: ghcr.io/usernammy/shortener
   tag: latest # replace with sha-<commit> for immutable deploys
 
 ingress:

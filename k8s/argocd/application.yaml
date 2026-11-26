@@ -11,7 +11,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-github-user/devops-platform.git
+    repoURL: https://github.com/UserNammy/devops-platform.git
     targetRevision: main
     path: k8s/charts/shortener
     helm:

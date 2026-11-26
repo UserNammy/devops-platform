@@ -135,7 +135,7 @@ kubectl -n shortener create secret generic shortener-db \
 kubectl apply -f k8s/argocd/application.yaml
 ```
 
-Before deploying, replace `your-github-user` in `k8s/argocd/application.yaml` and `k8s/charts/shortener/values*.yaml`, and `sho.example.com` with your domain. After the first `terraform init`, commit the generated `.terraform.lock.hcl` so every run uses the same provider build.
+Before deploying, replace `sho.example.com` with your domain. After the first `terraform init`, commit the generated `.terraform.lock.hcl` so every run uses the same provider build.
 
 ## Tech choices
 
