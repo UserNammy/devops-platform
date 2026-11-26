@@ -1,0 +1,15 @@
+shortener {{ .Chart.AppVersion }} has been deployed as release "{{ .Release.Name }}".
+
+{{- if .Values.ingress.enabled }}
+{{- range .Values.ingress.hosts }}
+  URL: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else }}
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "shortener.fullname" . }} 8000:{{ .Values.service.port }}
+{{- end }}
+
+{{- if not .Values.secret.existingSecret }}
+
+WARNING: using the placeholder database Secret from values.yaml.
+Set secret.existingSecret for anything other than a test install.
+{{- end }}

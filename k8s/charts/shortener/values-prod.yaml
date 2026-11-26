@@ -1,0 +1,25 @@
+# Production overrides, used by the Argo CD Application.
+image:
+  repository: ghcr.io/your-github-user/shortener
+  tag: latest # replace with sha-<commit> for immutable deploys
+
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: sho.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: shortener-tls
+      hosts:
+        - sho.example.com
+
+secret:
+  # Created out-of-band; see README "Secrets".
+  existingSecret: shortener-db
+
+metrics:
+  serviceMonitor:
+    enabled: true

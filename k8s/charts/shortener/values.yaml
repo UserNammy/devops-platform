@@ -1,0 +1,88 @@
+# Default values for the shortener chart.
+
+image:
+  repository: ghcr.io/your-github-user/shortener
+  # Overridden per environment with the immutable sha-<commit> tag pushed by CI.
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+
+replicaCount: 2
+
+serviceAccount:
+  create: true
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: sho.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: shortener-tls
+  #    hosts:
+  #      - sho.example.com
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 96Mi
+  limits:
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# Non-sensitive configuration, rendered into a ConfigMap.
+config:
+  baseUrl: https://sho.example.com
+  logLevel: info
+
+# Sensitive configuration. Do NOT put real values here.
+# Either point to a Secret managed outside of Git (Sealed Secrets, External
+# Secrets, `kubectl create secret`), or override databaseUrl at deploy time.
+secret:
+  existingSecret: ""
+  databaseUrl: "postgresql+psycopg://shortener:CHANGE_ME@postgres:5432/shortener"
+
+metrics:
+  serviceMonitor:
+    # Requires the Prometheus Operator CRDs (kube-prometheus-stack).
+    enabled: false
+    interval: 30s
+    # Must match the kube-prometheus-stack serviceMonitorSelector.
+    labels:
+      release: kube-prometheus-stack
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
