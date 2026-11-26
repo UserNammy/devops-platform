@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from shortener import __version__
 from shortener.config import Settings, get_settings
 from shortener.db import Base, get_session, make_engine, make_sessionmaker
+from shortener.metrics import LINKS_CREATED, REDIRECTS, instrument
 from shortener.models import Link
 from shortener.schemas import CODE_PATTERN, LinkCreate, LinkOut
 
@@ -43,6 +44,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine.dispose()
 
     app = FastAPI(title="shortener", version=__version__, lifespan=lifespan)
+    instrument(app)
 
     def to_out(link: Link) -> LinkOut:
         return LinkOut(
@@ -93,6 +95,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 session.rollback()
                 continue
             session.refresh(link)
+            LINKS_CREATED.inc()
             return to_out(link)
 
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="code already in use")
@@ -124,6 +127,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if target is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="link not found")
         session.commit()
+        REDIRECTS.inc()
         return RedirectResponse(target, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
     return app
