@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+[DEFAULT]
+backend = systemd
+banaction = ufw
+bantime = 1h
+bantime.increment = true
+findtime = 10m
+maxretry = 5
+ignoreip = 127.0.0.1/8 ::1
+
+[sshd]
+enabled = true
+port = {{ ssh_port }}

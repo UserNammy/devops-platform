@@ -1,0 +1,12 @@
+---
+- name: Install hardened sshd drop-in
+  ansible.builtin.template:
+    src: hardening.conf.j2
+    # Low number: sshd keeps the first value it reads, so this wins over
+    # the 50-cloud-init.conf drop-in shipped by Ubuntu cloud images.
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Restart ssh

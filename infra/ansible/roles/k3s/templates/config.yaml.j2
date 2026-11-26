@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+node-name: {{ inventory_hostname }}
+write-kubeconfig-mode: "0600"
+tls-san:
+  - {{ ansible_host }}
+secrets-encryption: true
+# Traefik (bundled) is kept as the ingress controller.
+kube-apiserver-arg:
+  - "anonymous-auth=false"

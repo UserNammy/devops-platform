@@ -1,0 +1,4 @@
+# Copy to hosts.ini (git-ignored). The Terraform output `ansible_inventory`
+# prints this block with the real address.
+[k3s_server]
+devops-platform-prod-k3s-1 ansible_host=203.0.113.20
